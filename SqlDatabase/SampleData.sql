@@ -20,7 +20,7 @@ DROP TABLE [dbo].[Customer];
 
 INSERT INTO [State] SELECT 'SP', 'São Paulo', GETDATE(), NULL;
 INSERT INTO [State] SELECT 'RJ', 'Rio de Janeiro', GETDATE(), NULL;
-INSERT INTO [State] SELECT 'SP', 'Paraná', GETDATE(), NULL;
+INSERT INTO [State] SELECT 'PR', 'Paraná', GETDATE(), NULL;
 
 INSERT INTO City SELECT 'São Paulo', 1, GETDATE(), NULL;
 INSERT INTO City SELECT 'Osasco', 1, GETDATE(), NULL;
@@ -29,11 +29,11 @@ INSERT INTO City SELECT 'Niteroi', 2, GETDATE(), NULL;
 INSERT INTO City SELECT 'Curitiba', 3, GETDATE(), NULL;
 INSERT INTO City SELECT 'Foz do Iguaçu', 3, GETDATE(), NULL;
 
-INSERT INTO Cinema SELECT 'Cinemark Pátio Paulista', 1, 'Rua Treze de Maio, 1234, Piso 3', 1, GETDATE(), NULL;
-INSERT INTO Cinema SELECT 'Cinépolis JK Iguatemi', 1, 'Rua Juscelink Kubscheck, 1234, Piso 4', 1, GETDATE(), NULL;
-INSERT INTO Cinema SELECT 'Espaço Itaú Shopping Eldorado', 1, 'Avenida Rebolsas, 1234, Piso 5', 1, GETDATE(), NULL;
-INSERT INTO Cinema SELECT 'Cinemark Super Shopping', 2, 'Av Bussocaba, 1234', 1, GETDATE(), NULL;
-INSERT INTO Cinema SELECT 'Cinemark Barra Shopping', 3, 'Av Ipanema, 1234, Piso 1', 1, GETDATE(), NULL;
+INSERT INTO Cinema SELECT 'Cinemark Pátio Paulista', 1, 'Rua Treze de Maio, 1234, Piso 3', 1, GETDATE(), NULL, 'assets/cinema1.jpg';
+INSERT INTO Cinema SELECT 'Cinépolis JK Iguatemi', 1, 'Rua Juscelink Kubscheck, 1234, Piso 4', 1, GETDATE(), NULL, 'assets/cinema2.jpg';
+INSERT INTO Cinema SELECT 'Espaço Itaú Shopping Eldorado', 1, 'Avenida Rebolsas, 1234, Piso 5', 1, GETDATE(), NULL, 'assets/cinema3.jpg';
+INSERT INTO Cinema SELECT 'Cinemark Super Shopping', 2, 'Av Bussocaba, 1234', 1, GETDATE(), NULL, 'assets/cinema4.jpg';
+INSERT INTO Cinema SELECT 'Cinemark Barra Shopping', 3, 'Av Ipanema, 1234, Piso 1', 1, GETDATE(), NULL, 'assets/cinema5.jpg';
 
 INSERT INTO MovieGenre SELECT 'Action', GETDATE(), NULL;
 INSERT INTO MovieGenre SELECT 'Adventure', GETDATE(), NULL;
@@ -60,9 +60,21 @@ INSERT INTO SeatType SELECT 'VIP', '', 0, 1, 0, GETDATE(), NULL;
 INSERT INTO SeatType SELECT 'WheelChair', '', 0, 0, 1, GETDATE(), NULL;
 INSERT INTO SeatType SELECT 'Handcap', '', 1, 0, 0, GETDATE(), NULL;
 
+ALTER FUNCTION dbo.FN_RowNumberChar (@RowNumber tinyint)
+RETURNS varchar(2)
+AS
+BEGIN
+	-- Equivalent to the 4199 message on sys.messages
+	IF @RowNumber< 1 OR @RowNumber > 26
+		RETURN CAST('Argument value ' + CONVERT(varchar(3), @RowNumber) + ' is invalid for argument @RowNumber ofFN_RowNumberChar function.' as int);
+
+	RETURN CHAR(@RowNumber + 64)
+END
+GO
+
 WITH Nbrs (Number) AS (SELECT 1 UNION ALL SELECT 1 + Number FROM Nbrs WHERE Number < 99)
 INSERT INTO Seat
-SELECT V.RowChar +'-'+CONVERT(varchar(10), CN.Number) as [Name], RN.Number as RowNumber, CN.Number as ColumnNumber,
+SELECT dbo.FN_RowNumberChar(RN.Number) + '-' + CONVERT(varchar(10), CN.Number) as [Name], RN.Number as RowNumber, CN.Number as ColumnNumber,
 	A.ID as AuditoriumID, CASE 
 		WHEN RN.Number BETWEEN 5 and 8 AND CN.Number BETWEEN 5 AND 10 THEN 2 
 		WHEN RN.Number BETWEEN 2 and 3 AND CN.Number BETWEEN 7 AND 9 THEN 3
@@ -72,7 +84,6 @@ SELECT V.RowChar +'-'+CONVERT(varchar(10), CN.Number) as [Name], RN.Number as Ro
 FROM Auditorium A
 INNER JOIN Nbrs CN ON CN.Number <= A.SeatColumns
 INNER JOIN Nbrs RN ON RN.Number <= A.SeatRows
-INNER JOIN VW_RowNumberChar V ON V.RowNumber = RN.Number
 ORDER BY A.ID, RN.Number, CN.Number
 
 

@@ -1,0 +1,5 @@
+CREATE DATABASE CinemaMonster;
+GO
+
+CREATE DATABASE KeyCloak;
+GO
