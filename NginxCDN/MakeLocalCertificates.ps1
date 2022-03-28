@@ -7,6 +7,6 @@ mkcert -install
 # Generate Certificate files for local domain
 mkcert -key-file ssl.key -cert-file ssl.crt cinema.local
 
-del .\certs\ssl.*
+del C:\DevData\git\CinemaMonster-Infra\NginxCDN\certs\ssl.*
 
-mv ssl.* .\certs\
+mv ssl.* C:\DevData\git\CinemaMonster-Infra\NginxCDN\certs\
